@@ -46,17 +46,17 @@ impl eframe::App for MyApp {
             );
             if ui.button("Click each year").clicked() {
                 self.age += 1;
-                let ctx = ctx.clone();
 
                 //let promise = poll_promise::Promise::spawn_thread("slow_operation", move || slow());
-                let (sender, promise) = Promise::new();
+                // let (sender, promise) = Promise::new();
 
-                std::thread::spawn(move || {
-                    println!("run slow operation");
-                    thread::sleep(Duration::from_secs(4));
-                    sender.send(42);
-                    ctx.request_repaint();
-                });
+                // std::thread::spawn(move || {
+                //     println!("run slow operation");
+                //     thread::sleep(Duration::from_secs(4));
+                //     sender.send(42);
+                //     ctx.request_repaint();
+                // });
+                let promise = poll_promise::Promise::spawn_thread("_", move || slow());
                 self.promise = Some(promise)
             }
 
@@ -73,4 +73,10 @@ impl eframe::App for MyApp {
             ui.label(format!("Hello '{}', age {}", self.name, self.age));
         });
     }
+}
+
+fn slow() -> i32 {
+    println!("run slow operation");
+    thread::sleep(Duration::from_secs(4));
+    42
 }
