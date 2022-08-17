@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 eframe = { version = "0.18.0", features = ["default_fonts"] }
-poll-promise = "0.1.0"
+poll-promise = { version = "0.1", features = ["tokio"] }
