@@ -1,6 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use std::{thread, time::Duration};
+use tokio::{
+    runtime::Builder,
+    time::{sleep, Duration},
+};
 
 use eframe::egui;
 use poll_promise::Promise;
@@ -47,16 +50,14 @@ impl eframe::App for MyApp {
             if ui.button("Click each year").clicked() {
                 self.age += 1;
 
-                //let promise = poll_promise::Promise::spawn_thread("slow_operation", move || slow());
-                // let (sender, promise) = Promise::new();
+                let runtime = Builder::new_multi_thread()
+                    .worker_threads(1)
+                    .enable_all()
+                    .build()
+                    .unwrap();
 
-                // std::thread::spawn(move || {
-                //     println!("run slow operation");
-                //     thread::sleep(Duration::from_secs(4));
-                //     sender.send(42);
-                //     ctx.request_repaint();
-                // });
-                let promise = poll_promise::Promise::spawn_thread("_", move || slow());
+                let promise =
+                    poll_promise::Promise::spawn_thread("_", move || runtime.block_on(slow()));
                 self.promise = Some(promise)
             }
 
@@ -75,8 +76,8 @@ impl eframe::App for MyApp {
     }
 }
 
-fn slow() -> i32 {
+async fn slow() -> i32 {
     println!("run slow operation");
-    thread::sleep(Duration::from_secs(4));
+    sleep(Duration::from_secs(5)).await;
     42
 }
